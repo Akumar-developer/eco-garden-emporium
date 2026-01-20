@@ -94,7 +94,7 @@ To pull and run the image locally (Docker required):
 
 ```bash
 docker pull <dockerhub-akrdev>/my-web-app:latest
-docker run -p 80:80 <dockerhub-username>/my-web-app:latest
+docker run -p 80:80 <dockerhub-akrdev>/my-web-app:latest
 ```
 
 ---
