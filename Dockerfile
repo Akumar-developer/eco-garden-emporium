@@ -1,21 +1,19 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy package files first
 COPY package.json ./
-
-# Install dependencies (including devDependencies)
 RUN npm install
 
-# Copy rest of the code
 COPY . .
-
-# Build the app
 RUN npm run build
 
-# Expose Vite preview port (optional)
-EXPOSE 5173
+FROM nginx:alpine
 
-# Run dev server (or preview)
-CMD ["npm","run","dev"]
+RUN rm -rf /usr/share/nginx/html/*
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
