@@ -106,20 +106,58 @@ npm run dev
 
 ---
 
+## Kubernetes Deployment
+
+[#kubernetes-deployment](#kubernetes-deployment)
+
+Beyond containerization, this project includes Kubernetes manifests to deploy the Dockerized app on a cluster — validated locally using Kind (Kubernetes in Docker) before any cloud deployment.
+
+### Why Kubernetes, After Docker
+
+Docker solves packaging and single-host running. It doesn't solve: what happens when the container crashes, how you scale to multiple replicas, or how other services discover this one without hardcoded IPs. That's the gap Kubernetes closes — orchestration on top of the containers Docker builds.
+
+### Resources
+
+| Resource | Purpose |
+|---|---|
+| `Deployment` | Manages replica count, rolling updates, and restarts the Pod automatically if the container crashes |
+| `Service` (ClusterIP) | Gives the Deployment's Pods a stable internal DNS name and IP — Pods are ephemeral and get replaced with new IPs on every restart, the Service is what stays constant |
+
+**Why ClusterIP specifically:** ClusterIP only exposes the app *inside* the cluster — no external access by design. This mirrors the Docker networking principle from earlier in this repo: decide what's internal-only vs. what should be exposed before you open anything up. For actual external access, this would need a `NodePort`, `LoadBalancer`, or an `Ingress` layered on top — a deliberate next decision, not a default.
+
+### Local Testing with Kind
+
+The `kind_cluster/` directory contains the Kind cluster configuration used to test these manifests locally — a real Kubernetes API and control plane running in Docker containers, without needing a cloud cluster (EKS/GKE) just to validate that manifests apply cleanly and Pods reach Ready state.
+
+```bash
+# Create the local cluster
+kind create cluster --config kind_cluster/kind-config.yaml
+
+# Apply the manifests
+kubectl apply -f k8s-specs/
+
+# Verify
+kubectl get deployments
+kubectl get services
+kubectl get pods
+
+# Access the ClusterIP service locally (since it has no external IP)
+kubectl port-forward service/<service-name> 8080:80
+```
+
+### What This Demonstrates
+
+- Translating a Dockerized app into declarative Kubernetes manifests
+- Understanding Service types and choosing ClusterIP deliberately, not by default
+- Using Kind for fast local iteration before touching a real cloud cluster
+- Applying the same "what's internal vs. exposed" thinking from Docker networking to Kubernetes Services
+
+
+---
 ## Notes
 
 The base UI of this application was generated using an AI-assisted tool. The focus of this project is on Dockerization, CI automation, and push the docker image to docker hub for further practices.
 
----
-
-## Resume Highlights
-
-* Containerized a modern web application using Docker and multi-stage builds
-* Implemented CI pipeline with GitHub Actions to automate Docker image builds and publishing
-* Used GitHub-hosted Linux runners for cloud-based container builds
-* Published and versioned Docker images on Docker Hub
-
----
 
 ## Author
 
@@ -128,8 +166,5 @@ Arun kumar
 
 ---
 
-## License
-
-This project is intended for educational and portfolio purposes.
 
 
